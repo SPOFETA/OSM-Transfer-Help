@@ -4,9 +4,9 @@
 
   if (tokenCookie) {
     const token = tokenCookie.split("=")[1];
-    console.log("[OSM Extension] Token encontrado no cookie:", token.substring(0, 20) + "...");
+    console.log("[OSM Extension] Token found in cookie:", token.substring(0, 20) + "...");
     chrome.runtime.sendMessage({ type: "OSM_TOKEN", token });
   } else {
-    console.warn("[OSM Extension] Nenhum cookie access_token encontrado!");
+    console.warn("[OSM Extension] No cookie found!");
     }
 })();
