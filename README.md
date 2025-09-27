@@ -30,7 +30,7 @@ Since this extension isn’t published on the Chrome Web Store yet, you need to 
    ```bash
    git clone https://github.com/your-username/osm-transfer-helper.git
    
-Or download as a .zip and extract it.
+Or download as a .zip by clicking the "code" green button and extract it.
 
 2. **Open Google Chrome (or any Chromium-based browser like Edge or Brave).**
 
