@@ -43,7 +43,7 @@ Or download as a .zip and extract it.
 
 The extension should now appear in your browser toolbar. Pin it for quick access!
 
-## 🚀 Usage
+## 💻 Usage
 
 1. **Open OSM in your browser and log into your account.**
 
