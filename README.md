@@ -43,6 +43,8 @@ Or download as a .zip by clicking the "code" green button and extract it.
 
 The extension should now appear in your browser toolbar. Pin it for quick access!
 
+[▶️ Watch tutorial on YouTube](https://www.youtube.com/watch?v=SEU_VIDEO_ID)
+
 ## 💻 Usage
 
 1. **Open OSM in your browser and log into your account.**
