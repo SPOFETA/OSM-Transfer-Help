@@ -1,10 +1,14 @@
 let osmToken = null;
+let osmIds = null;
 
 chrome.runtime.onMessage.addListener((msg) => {
   if (msg.type === "OSM_TOKEN") {
     osmToken = msg.token;
-    console.log("[OSM Extension] Token recieved from content.js:", osmToken.substring(0, 20) + "...");
     chrome.storage.local.set({ osmToken });
+  }
+  if (msg.type === "OSM_IDS") {
+    osmIds = msg.ids;
+    chrome.storage.local.set({ osmIds });
   }
 });
 
@@ -12,22 +16,27 @@ async function getTransferPlayers() {
   if (!osmToken) {
     const data = await chrome.storage.local.get("osmToken");
     osmToken = data.osmToken;
-    if (osmToken) {
-      console.log("[OSM Extension] Token retrieved do storage:", osmToken.substring(0, 20) + "...");
-    } else {
-      console.warn("[OSM Extension] No token available!");
-      return { players: [], balance: 0, error: true };
-    }
   }
+
+  if (!osmIds) {
+    const data = await chrome.storage.local.get("osmIds");
+    osmIds = data.osmIds;
+  }
+
+   if (!osmToken || !osmIds) {
+    console.warn("[OSM Extension] Token ou IDs indisponíveis!");
+    return { players: [], balance: 0, balanceBreakdown: {} };
+  }
+
+  const { leagueId, teamId } = osmIds;
+
 
   try {
     // Fetch players
     const response = await fetch(
-      "https://web-api.onlinesoccermanager.com/api/v1/leagues/126217657/teams/9/transferplayers/0",
+      `https://web-api.onlinesoccermanager.com/api/v1/leagues/${leagueId}/teams/${teamId}/transferplayers/0`,
       { headers: { Authorization: `Bearer ${osmToken}` } }
     );
-
-    console.log("[OSM Extension] Response status:", response.status);
 
     if (!response.ok) {
       const errorText = await response.text();
@@ -35,13 +44,11 @@ async function getTransferPlayers() {
       return { players: [], balance: 0, error: true };
     }
 
-    // Fetch balance/savings for future filtering
+    // Fetch balance/savings
     const responseBalance = await fetch(
-      "https://web-api.onlinesoccermanager.com/api/v1/leagues/126217657/teams/9/finances/balanceandsavings",
+     `https://web-api.onlinesoccermanager.com/api/v1/leagues/${leagueId}/teams/${teamId}/finances/balanceandsavings`,
       { headers: { Authorization: `Bearer ${osmToken}` } }
     );
-
-    console.log("[OSM Extension] Response status while retrieving balance:", responseBalance.status);
 
     if (!responseBalance.ok) {
       const errorText = await responseBalance.text();
@@ -52,8 +59,6 @@ async function getTransferPlayers() {
     const players = await response.json();
     const balanceData = await responseBalance.json();
     const availableBalance = (balanceData.balance || 0) + (balanceData.savings || 0);
-    
-    console.log("[OSM Extension] Response JSON API:", players);
 
     const processedPlayers = processPlayers(players, availableBalance);
 
