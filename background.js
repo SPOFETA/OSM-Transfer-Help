@@ -4,13 +4,36 @@ let osmIds = null;
 chrome.runtime.onMessage.addListener((msg) => {
   if (msg.type === "OSM_TOKEN") {
     osmToken = msg.token;
+
     chrome.storage.local.set({ osmToken });
   }
+
   if (msg.type === "OSM_IDS") {
     osmIds = msg.ids;
     chrome.storage.local.set({ osmIds });
   }
 });
+
+async function getOsmBaseDomain() {
+  return new Promise((resolve) => {
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      try {
+        const url = new URL(tabs[0].url);
+        const hostname = url.hostname;
+
+        if (hostname.includes("onlinesoccermanager.nl")) {
+          resolve("onlinesoccermanager.nl");
+        } else if (hostname.includes("onlinesoccermanager.com")) {
+          resolve("onlinesoccermanager.com");
+        } else {
+          resolve("onlinesoccermanager.com");
+        }
+      } catch (err) {
+        resolve("onlinesoccermanager.com");
+      }
+    });
+  });
+}
 
 async function getTransferPlayers() {
   if (!osmToken) {
@@ -24,7 +47,7 @@ async function getTransferPlayers() {
   }
 
    if (!osmToken || !osmIds) {
-    console.warn("[OSM Extension] Token ou IDs indisponíveis!");
+    console.warn("[OSM Extension] Token or IDs unavailable!");
     return { players: [], balance: 0, balanceBreakdown: {} };
   }
 
@@ -32,9 +55,10 @@ async function getTransferPlayers() {
 
 
   try {
-    // Fetch players
+    const osmBaseDomain = await getOsmBaseDomain();
+
     const response = await fetch(
-      `https://web-api.onlinesoccermanager.com/api/v1/leagues/${leagueId}/teams/${teamId}/transferplayers/0`,
+      `https://web-api.${osmBaseDomain}/api/v1/leagues/${leagueId}/teams/${teamId}/transferplayers/0`,
       { headers: { Authorization: `Bearer ${osmToken}` } }
     );
 
@@ -44,9 +68,8 @@ async function getTransferPlayers() {
       return { players: [], balance: 0, error: true };
     }
 
-    // Fetch balance/savings
     const responseBalance = await fetch(
-     `https://web-api.onlinesoccermanager.com/api/v1/leagues/${leagueId}/teams/${teamId}/finances/balanceandsavings`,
+     `https://web-api.${osmBaseDomain}/api/v1/leagues/${leagueId}/teams/${teamId}/finances/balanceandsavings`,
       { headers: { Authorization: `Bearer ${osmToken}` } }
     );
 
@@ -62,7 +85,6 @@ async function getTransferPlayers() {
 
     const processedPlayers = processPlayers(players, availableBalance);
 
-    // Return players and balance
     return {
       players: processedPlayers,
       balance: availableBalance,
@@ -82,7 +104,7 @@ async function getTransferPlayers() {
 function processPlayers(players, availableBalance) {
   const map = {
     4: "ST", 11: "RW", 8: "LW", 1: "CAM", 2: "CM", 5: "CDM",
-    7: "LM", 12: "RB", 3: "CB", 9: "LB", 6: "GK"
+    7: "LM", 10: "RM", 12: "RB", 3: "CB", 9: "LB", 6: "GK"
   };
 
   return players
@@ -90,9 +112,23 @@ function processPlayers(players, availableBalance) {
       const p = item.player || {};
       const value = p.value;
       const price = item.price;
+
+      let rating;
+      if (["ST", "RW", "LW"].includes(map[p.specificPosition])) {
+        rating = p.statAtt;
+      } else if (["CAM", "CM", "CDM", "LM"].includes(map[p.specificPosition])) {
+        rating = p.statOvr;
+      } else if(["RB", "CB", "LB", "GK"].includes(map[p.specificPosition])) {
+        rating = p.statDef;
+      } else {
+        rating = p.statOvr;
+      }
+
       return {
         full_name: p.fullName,
         position: map[p.specificPosition] || p.specificPosition,
+        age: p.age,
+        rating,
         value,
         price,
         max_profit: (value * 2.5) - price
