@@ -8,6 +8,8 @@ A **browser extension** that connects to OSM and shows a list of the most “pro
 
 - Fetches the transfer list and shows:
   - **Name**
+  - **Age**
+  - **Rating**
   - **Position**
   - **Market Value**
   - **Price**
