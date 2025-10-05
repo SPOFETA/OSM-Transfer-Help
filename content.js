@@ -34,10 +34,8 @@
     return null;
   }
 
-  // send to background
   const ids = getLeagueAndTeamId() || getLeagueAndTeam_LocalStorage();
   if (ids) {
     chrome.runtime.sendMessage({ type: "OSM_IDS", ids });
   }
 })();
-

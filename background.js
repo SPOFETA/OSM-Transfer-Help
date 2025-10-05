@@ -53,7 +53,6 @@ async function getTransferPlayers() {
 
   const { leagueId, teamId } = osmIds;
 
-
   try {
     const osmBaseDomain = await getOsmBaseDomain();
 
@@ -116,7 +115,7 @@ function processPlayers(players, availableBalance) {
       let rating;
       if (["ST", "RW", "LW"].includes(map[p.specificPosition])) {
         rating = p.statAtt;
-      } else if (["CAM", "CM", "CDM", "LM"].includes(map[p.specificPosition])) {
+      } else if (["CAM", "CM", "CDM", "LM", "RM"].includes(map[p.specificPosition])) {
         rating = p.statOvr;
       } else if(["RB", "CB", "LB", "GK"].includes(map[p.specificPosition])) {
         rating = p.statDef;
