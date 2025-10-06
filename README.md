@@ -7,7 +7,7 @@ A **browser extension** that connects to OSM and shows a list of the most “pro
 ## 📸 Screenshot
 
 **Main popup view**
-![Main popup](assets/screenshot1.png)
+![Main popup](assets/scrnshot1.png)
 
 ---
 ## ✨ Features
