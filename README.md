@@ -4,6 +4,12 @@ A **browser extension** that connects to OSM and shows a list of the most “pro
 
 ---
 
+## 📸 Screenshot
+
+**Main popup view**
+![Main popup](assets/scrnshot1.png)
+
+---
 ## ✨ Features
 
 - Fetches the transfer list and shows:
